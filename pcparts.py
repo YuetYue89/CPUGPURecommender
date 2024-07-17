@@ -9,7 +9,6 @@ gpu_data['Price'] = gpu_data['Price'].replace('[\$,]', '', regex=True).astype(fl
 cpu_data['Price'] = cpu_data['Price'].replace('[\$,]', '', regex=True).astype(float)
 
 # Define the budget
-
 budget = float(input("Enter Budget: "))
 
 # Initial bottleneck range
@@ -34,10 +33,10 @@ while not found_valid_pair:
         combined_score = gpu.Benchmark + cpu.Benchmark
         gpu_normalized = gpu.Normalized
         cpu_normalized = cpu.Normalized
-        bottleneckratio = gpu_normalized / cpu_normalized
+        bottleneck_ratio = gpu_normalized / cpu_normalized
 
         # Check if the pair is within budget and has a good balance (bottleneck)
-        if total_price <= budget and bottleneck_min <= bottleneckratio <= bottleneck_max:
+        if total_price <= budget and bottleneck_min <= bottleneck_ratio <= bottleneck_max:
             pairs_within_budget.append((gpu.Model, cpu.Model, total_price, combined_score, gpu_normalized, cpu_normalized))
 
     # Sort pairs by combined benchmark score in descending order
@@ -48,12 +47,15 @@ while not found_valid_pair:
         top_pair = sorted_pairs[0]
         found_valid_pair = True
     else:
-        # Increase the bottleneck range if no valid pairs are found
+        # Stop increasing the bottleneck range if it reaches 0.0
+        if bottleneck_min <= 0.0:
+            print("No valid CPU and GPU pairs at that price range.")
+            break
         bottleneck_min -= 0.1
         bottleneck_max += 0.1
         print(f"No matches found within {bottleneck_min:.1f}-{bottleneck_max:.1f} bottleneck range. Increasing range...")
 
-# Display the top pair
-print("Top GPU and CPU pair within the budget and bottleneck range:")
-print(f"GPU: {top_pair[0]}, CPU: {top_pair[1]}, Total Price: ${top_pair[2]:.2f}, Bottleneck Ratio: {top_pair[4] / top_pair[5]:.2f}")
-# , Combined Benchmark: {top_pair[3]}, GPU Normalized: {top_pair[4]:.2f}, CPU Normalized: {top_pair[5]:.2f}
+if found_valid_pair:
+    # Display the top pair
+    print("Top GPU and CPU pair within the budget and bottleneck range:")
+    print(f"GPU: {top_pair[0]}, CPU: {top_pair[1]}, Total Price: ${top_pair[2]:.2f}, Bottleneck Ratio: {top_pair[4] / top_pair[5]:.2f}")
